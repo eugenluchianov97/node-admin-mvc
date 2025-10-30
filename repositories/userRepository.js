@@ -15,13 +15,24 @@ export const userRepository = {
         const sortField = options.sort || "createdAt";
         const sortOrder = options.order === "desc" ? -1 : 1;
 
+        const q = options.q ? options.q.trim() : null;
+
         const allowedSortFields = ["_id","role", "name", "email","createdAt","updatedAt"];
 
         const sortBy = allowedSortFields.includes(sortField) ? { [sortField]: sortOrder } : { [sortField]: 1 };
 
+        const filter = {};
+        if (q) {
+            filter.$or = [
+                {name  : { $regex: q, $options: "i" } },
+                { email: { $regex: q, $options: "i" } },
+                { role: { $regex: q, $options: "i" } },
+            ];
+        }
+
         const [users, total] = await Promise.all([
-            User.find({}).sort(sortBy).skip(skip).limit(limit),
-            User.countDocuments({}),
+            User.find(filter).sort(sortBy).skip(skip).limit(limit),
+            User.countDocuments(filter),
         ]);
 
         return paginate({data:users, total, page, limit,sortBy});

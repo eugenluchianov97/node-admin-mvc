@@ -9,13 +9,25 @@ export const categoryRepository = {
         const sortField = options.sort || "createdAt";
         const sortOrder = options.order === "desc" ? -1 : 1;
 
+        const q = options.q ? options.q.trim() : null;
+
         const allowedSortFields = ["_id","title", "image", "active","lang","createdAt","updatedAt"];
 
         const sortBy = allowedSortFields.includes(sortField) ? { [sortField]: sortOrder } : { [sortField]: 1 };
 
+
+        const filter = {};
+        if (q) {
+            filter.$or = [
+                { title: { $regex: q, $options: "i" } },
+                { lang: { $regex: q, $options: "i" } },
+            ];
+        }
+
+
         const [categories, total] = await Promise.all([
-            Category.find({}).sort(sortBy).skip(skip).limit(limit),
-            Category.countDocuments({}),
+            Category.find(filter).sort(sortBy).skip(skip).limit(limit),
+            Category.countDocuments(filter),
         ]);
 
         return paginate({data:categories, total, page, limit,sortBy});
