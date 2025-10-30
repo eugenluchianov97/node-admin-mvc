@@ -17,7 +17,7 @@ const CategorySchema = new mongoose.Schema({
     lang: {
         type: String,
         required: true,
-        enum: ["en", "ru"], // можно расширить под другие языки
+        enum: ["en", "ru"],
     }
 }, { timestamps: true });
 

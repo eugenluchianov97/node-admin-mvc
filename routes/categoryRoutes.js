@@ -1,24 +1,37 @@
 import express from "express";
-import {
-    getCategories,
-    getCategory,
-    createCategory,
-    updateCategory,
-    deleteCategory
-} from "../controllers/categoryController.js";
+import categoryController from "../controllers/categoryController.js";
 
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { adminMiddleware } from "../middleware/adminMiddleware.js";
+import {redactorMiddleware} from "../middleware/redactorMiddleware.js";
+
+import multer from "multer";
+
+import updateValidator from "../validators/category/updateValidator.js";
+import createValidator from "../validators/category/createValidator.js";
 
 const router = express.Router();
+const upload = multer(); // без сохранения на диск, используем buffer
 
-// Все маршруты защищены JWT
-router.get("/", authMiddleware, getCategories); // любой авторизованный
-router.get("/:id", authMiddleware, getCategory); // любой авторизованный
+router.get("/", categoryController.index);
+router.get("/:id", categoryController.show);
 
-// Только админ может создавать, обновлять и удалять
-router.post("/", authMiddleware, adminMiddleware, createCategory);
-router.put("/:id", authMiddleware, adminMiddleware, updateCategory);
-router.delete("/:id", authMiddleware, adminMiddleware, deleteCategory);
+router.post("/",
+    ...[authMiddleware,redactorMiddleware],
+    upload.single("image"),
+    ...createValidator,
+    categoryController.create
+);
+
+router.put("/:id",
+    ...[authMiddleware,redactorMiddleware],
+    upload.single("image"),
+    ...updateValidator,
+    categoryController.update
+);
+router.delete("/:id",
+    ...[authMiddleware,redactorMiddleware],
+    categoryController.delete
+);
 
 export default router;

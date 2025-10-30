@@ -15,16 +15,20 @@ const router = express.Router();
 
 router.get("/",...[authMiddleware,adminMiddleware], userController.index);
 router.get("/:id",...[authMiddleware,adminMiddleware], userController.show);
-router.post("/",
-    ...[authMiddleware,adminMiddleware],
+
+router.post(
+    "/",
+    ...[authMiddleware, adminMiddleware],
+    upload.single("avatar"),  // multer идёт раньше валидатора
     ...createValidator,
-    upload.single("avatar"),
     userController.create
 );
-router.put("/:id",
-    ...[authMiddleware,adminMiddleware],
+
+router.put(
+    "/:id",
+    ...[authMiddleware, adminMiddleware],
+    upload.single("avatar"),  // multer идёт раньше валидатора
     ...updateValidator,
-    upload.single("avatar"),
     userController.update
 );
 router.delete("/:id",...[authMiddleware,adminMiddleware], userController.delete);

@@ -22,8 +22,13 @@ const createValidator = [
         .isLength({ min: 6 })
         .withMessage("Пароль должен содержать минимум 6 символов"),
     body("role")
-        .isIn(["user", "redactor", "admin"])
-        .withMessage("Роль должна быть 'user', 'redactor' или 'admin'"),
+        .custom((value) => {
+            const allowedRoles = ["user", "redactor", "admin"];
+            if (!allowedRoles.includes(value)) {
+                throw new Error("Роль должна быть 'user', 'redactor' или 'admin'");
+            }
+            return true;
+        }),
     body("avatar")
         .optional()
         .custom((value, { req }) => {

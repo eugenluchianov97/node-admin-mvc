@@ -1,71 +1,79 @@
-import Category from "../models/Category.js";
+import { categoryService } from "../services/categoryService.js";
+import {validationResult} from "express-validator";
+import {fileService as uploadService} from "../services/uploadService.js";
+import mongoose from "mongoose";
+import isValid from "../utils/isValid.js";
 
-export const getCategories = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1; // текущая страница
-        const limit = parseInt(req.query.limit) || 10; // количество на странице
-        const skip = (page - 1) * limit;
+export const categoryController = {
+    async index(req, res) {
+        try {
+            const options = req.query || {};
+            const result = await categoryService.index(options);
+            res.json(result);
+        } catch (err) {
+            res.status(500).json({ message: err.message });
+        }
+    },
 
-        const total = await Category.countDocuments(); // всего записей
-        const totalPages = Math.ceil(total / limit);
+    async show(req, res) {
+        try {
+            const id = isValid(req.params.id);
 
-        const categories = await Category.find().skip(skip).limit(limit);
+            const category = await categoryService.show(id);
+            res.json(category);
+        } catch (err) {
+            res.status(500).json({ message: err.message });
+        }
+    },
 
-        res.json({
-            currentPage: page,
-            nextPage: page < totalPages ? page + 1 : null,
-            prevPage: page > 1 ? page - 1 : null,
-            totalPages,
-            limit,
-            data: categories
-        });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
+    async create(req, res) {
+        try {
+
+            const errors = validationResult(req);
+
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const {url} = uploadService.saveImage(req.file, "categories");
+
+
+            const newCategory = await categoryService.create({...req.body, image: url,});
+            res.status(201).json(newCategory);
+        } catch (err) {
+            res.status(400).json({ message: err.message });
+        }
+    },
+
+    async update(req, res) {
+        try {
+
+            const id = isValid(req.params.id);
+
+            const errors = validationResult(req);
+
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const {url} = uploadService.saveImage(req.file, "categories");
+
+            const updated = await categoryService.update(id, {...req.body, image: url,});
+            res.json(updated);
+        } catch (err) {
+            res.status(400).json({ message: err.message });
+        }
+    },
+
+    async delete(req, res) {
+        try {
+            const id = isValid(req.params.id);
+            const result = await categoryService.delete(id);
+            res.json(result);
+        } catch (err) {
+            res.status(500).json({ message: err.message });
+        }
+    },
 };
 
-
-// Получить одну категорию
-export const getCategory = async (req, res) => {
-    try {
-        const category = await Category.findById(req.params.id);
-        if (!category) return res.status(404).json({ message: "Category not found" });
-        res.json(category);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-};
-
-// Создать категорию
-export const createCategory = async (req, res) => {
-    try {
-        const { title, image, active, lang } = req.body;
-        const category = new Category({ title, image, active, lang });
-        await category.save();
-        res.status(201).json(category);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
-    }
-};
-
-// Обновить категорию
-export const updateCategory = async (req, res) => {
-    try {
-        const category = await Category.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!category) return res.status(404).json({ message: "Category not found" });
-        res.json(category);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
-    }
-};
-
-// Удалить категорию
-export const deleteCategory = async (req, res) => {
-    try {
-        const category = await Category.findByIdAndDelete(req.params.id);
-        if (!category) return res.status(404).json({ message: "Category not found" });
-        res.json({ message: "Category deleted" });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-};
+export default categoryController;
