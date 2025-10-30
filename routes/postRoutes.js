@@ -1,30 +1,41 @@
 import express from "express";
-import {
-    getPosts,
-    getPost,
-    createPost,
-    updatePost,
-    deletePost
-} from "../controllers/postController.js";
+import postController from "../controllers/postController.js";
 
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { adminMiddleware } from "../middleware/adminMiddleware.js";
+import {redactorMiddleware} from "../middleware/redactorMiddleware.js";
+
+import multer from "multer";
+
+import updateValidator from "../validators/post/updateValidator.js";
+import createValidator from "../validators/post/createValidator.js";
+import categoryController from "../controllers/categoryController.js";
+
 
 const router = express.Router();
+const upload = multer(); // без сохранения на диск, используем buffer
 
-// Получить все посты (любой авторизованный)
-router.get("/", authMiddleware, getPosts);
+router.get("/", postController.index);
 
-// Получить один пост
-router.get("/:id", authMiddleware, getPost);
+router.get("/:id",postController.show);
 
-// Создать пост (только админ)
-router.post("/", authMiddleware, adminMiddleware, createPost);
+router.post("/",
+    ...[authMiddleware,redactorMiddleware],
+    upload.single("image"),
+    ...createValidator,
+    postController.create
+);
 
-// Обновить пост (только админ)
-router.put("/:id", authMiddleware, adminMiddleware, updatePost);
+router.put("/:id",
+    ...[authMiddleware,redactorMiddleware],
+    upload.single("image"),
+    ...updateValidator,
+    postController.update
+);
 
-// Удалить пост (только админ)
-router.delete("/:id", authMiddleware, adminMiddleware, deletePost);
+router.delete("/:id",
+    ...[authMiddleware,redactorMiddleware],
+    postController.delete
+);
 
 export default router;

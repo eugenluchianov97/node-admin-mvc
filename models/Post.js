@@ -31,6 +31,11 @@ const PostSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
+    },
+    lang: {
+        type: String,
+        required: true,
+        enum: ["en", "ru"],
     }
 }, { timestamps: true });
 

@@ -1,7 +1,6 @@
 import { categoryService } from "../services/categoryService.js";
 import {validationResult} from "express-validator";
 import {fileService as uploadService} from "../services/uploadService.js";
-import mongoose from "mongoose";
 import isValid from "../utils/isValid.js";
 
 export const categoryController = {
@@ -61,7 +60,7 @@ export const categoryController = {
             const updated = await categoryService.update(id, {...req.body, image: url,});
             res.json(updated);
         } catch (err) {
-            res.status(400).json({ message: err.message });
+            res.status(500).json({ message: err.message });
         }
     },
 

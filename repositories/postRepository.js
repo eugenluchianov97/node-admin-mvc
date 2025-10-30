@@ -1,24 +1,23 @@
+import Post from "../models/Post.js";
 import {paginate} from "../utils/paginate.js";
-import Category from "../models/Category.js";
 import getFilter from "../utils/getFilter.js";
 
-export const categoryRepository = {
+
+export const postRepository = {
     async findAll( options = {}) {
         const page = parseInt(options.page, 10) || 1;
         const limit = parseInt(options.limit, 10) || 10;
         const skip = (page - 1) * limit;
 
+        const allowedSortFields = ["_id", "title", "content", "slug", "image", "active", "lang", "category_id", "user_id", "createdAt", "updatedAt"];
 
-
-        const allowedSortFields = ["_id","title", "image", "active","lang","createdAt","updatedAt"];
-        const allowedFilterFields = ["title"];
+        const allowedFilterFields = ["title","content","slug"];
 
         const  {sortBy, filter} = getFilter(allowedSortFields,allowedFilterFields,options);
 
-
         const [posts, total] = await Promise.all([
-            Category.find(filter).sort(sortBy).skip(skip).limit(limit),
-            Category.countDocuments(filter),
+            Post.find(filter).sort(sortBy).skip(skip).limit(limit),
+            Post.countDocuments(filter),
         ]);
 
         return paginate({data:posts, total, page, limit,sortBy});

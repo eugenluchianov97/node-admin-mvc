@@ -2,7 +2,7 @@ import express from "express";
 import categoryController from "../controllers/categoryController.js";
 
 import { authMiddleware } from "../middleware/authMiddleware.js";
-import { adminMiddleware } from "../middleware/adminMiddleware.js";
+
 import {redactorMiddleware} from "../middleware/redactorMiddleware.js";
 
 import multer from "multer";

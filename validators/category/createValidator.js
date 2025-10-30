@@ -8,8 +8,9 @@ const createValidator = [
         .withMessage("Имя должно содержать минимум 2 символа"),
     body("active")
         .optional()
-        .isIn([true, false])
-        .withMessage("Активность или  true или false"),
+        .toBoolean()
+        .isBoolean()
+        .withMessage("Поле 'active' должно быть true или false"),
     body("image")
         .optional()
         .custom((value, { req }) => {
