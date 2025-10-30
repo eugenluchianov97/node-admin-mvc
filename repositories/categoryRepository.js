@@ -25,6 +25,13 @@ export const categoryRepository = {
         }
 
 
+        allowedSortFields.forEach(field => {
+            if (options[field] !== undefined) {
+                filter[field] = options[field];
+            }
+        });
+
+
         const [categories, total] = await Promise.all([
             Category.find(filter).sort(sortBy).skip(skip).limit(limit),
             Category.countDocuments(filter),

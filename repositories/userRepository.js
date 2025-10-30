@@ -30,6 +30,12 @@ export const userRepository = {
             ];
         }
 
+        allowedSortFields.forEach(field => {
+            if (options[field] !== undefined) {
+                filter[field] = options[field];
+            }
+        });
+
         const [users, total] = await Promise.all([
             User.find(filter).sort(sortBy).skip(skip).limit(limit),
             User.countDocuments(filter),
