@@ -75,7 +75,7 @@ const updateValidator = [
             const user = await User.findById(value);
             if (!user) throw new Error("Пользователь с таким ID не найден");
             return true;
-        }),
+        })
 ];
 
 export default updateValidator;
